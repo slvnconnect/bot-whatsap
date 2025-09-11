@@ -12,6 +12,6 @@
   "dependencies": {
     "cohere-ai": "^7.18.1",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.34.0"
+    "@whiskeysockets/baileys": "^6.5.0"
   }
 }
