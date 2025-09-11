@@ -3,30 +3,26 @@ const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysocket
 const { CohereClient } = require('cohere-ai');
 const qrcode = require('qrcode-terminal');
 
-// TA CLÉ API COHERE (colle-la ici)
-// Garde-la en sécurité et ne la partage pas.
 const COHERE_API_KEY = 'oS7MBerWYQYUP22aOLES6nh4pg2aCrcU3Sh0pNqH';
 const cohere = new CohereClient({ token: COHERE_API_KEY });
 
-// Un tableau pour maintenir l'historique de la conversation
 let chatHistory = [];
 
 async function connectToWhatsApp() {
-    // Utilise useMultiFileAuthState pour sauvegarder l'authentification
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth');
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: false 
+        printQRInTerminal: false
     });
 
-    // Événement pour le QR code
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
         
         if (qr) {
-            qrcode.generate(qr, { small: true });
-            console.log('📱 Scanne ce QR code avec WhatsApp pour te connecter.');
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qr)}&size=300x300&ecc=L`;
+            console.log('🔗 Copie ce lien et ouvre-le dans ton navigateur pour scanner le QR code :');
+            console.log(qrUrl);
         }
 
         if (connection === 'close') {
@@ -40,7 +36,6 @@ async function connectToWhatsApp() {
         }
     });
 
-    // Événement pour les messages
     sock.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
         if (!msg.key.fromMe && m.type === 'notify') {
@@ -68,7 +63,6 @@ async function connectToWhatsApp() {
         }
     });
 
-    // Événement pour sauvegarder les identifiants
     sock.ev.on('creds.update', saveCreds);
 }
 
