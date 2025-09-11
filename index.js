@@ -6,7 +6,6 @@ const qrcode = require('qrcode-terminal');
 const COHERE_API_KEY = 'oS7MBerWYQYUP22aOLES6nh4pg2aCrcU3Sh0pNqH';
 const cohere = new CohereClient({ token: COHERE_API_KEY });
 
-// INSTRUCTIONS DE SYSTÈME DÉTAILLÉES POUR COHERE
 const SYSTEM_INSTRUCTIONS = `
 Tu es un assistant IA nommé de Silvano . Ta personnalité est amicale et un peu geek.
 Tes réponses doivent être :
@@ -20,6 +19,9 @@ Tes réponses doivent être :
 `;
 
 let chatHistory = [];
+
+// Fonction pour attendre un certain temps
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('baileys_auth');
@@ -39,11 +41,10 @@ async function connectToWhatsApp() {
         }
 
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== 401;
-            console.log('❌ Connexion fermée. Reconnexion ?', shouldReconnect);
-            if (shouldReconnect) {
-                connectToWhatsApp();
-            }
+            console.log('❌ Connexion fermée. Reconnexion en cours...');
+            // Ajoute un délai avant de tenter la reconnexion
+            await delay(5000); 
+            connectToWhatsApp();
         } else if (connection === 'open') {
             console.log('✅ Bot connecté et prêt !');
         }
@@ -55,24 +56,22 @@ async function connectToWhatsApp() {
             const sender = msg.key.remoteJid;
             const text = msg.message?.extendedTextMessage?.text || msg.message?.conversation;
 
-            // Gère les commandes spécifiques
-            if (text && text.toLowerCase().includes('bonjour')) {
-                await sock.sendMessage(sender, { text: 'Salut ! 👋' });
+            // NOUVEAUTÉ : Gère l'authentification "slvn"
+            if (text && text.toLowerCase().includes('slvn')) {
+                await sock.sendMessage(sender, { text: 'authentification reussie ✅' });
+                // Tu peux ajouter ici une logique pour changer le comportement du bot
                 return;
             }
 
-            // Si le message est vide ou non valide, on s'arrête
             if (!text) {
                 console.log('Message reçu sans contenu textuel, ignoré.');
                 return;
             }
-
-            // Envoie le message à Cohere et récupère la réponse
+            
             try {
                 const response = await cohere.chat({
                     model: 'command',
                     message: text,
-                    // Utilise les instructions de système
                     chatHistory: [
                         { role: "SYSTEM", message: SYSTEM_INSTRUCTIONS },
                         ...chatHistory
