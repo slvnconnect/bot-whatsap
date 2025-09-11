@@ -10,8 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cohere-ai": "^7.18.1",
-    "qrcode-terminal": "^0.12.0",
-    "@whiskeysockets/baileys": "latest"
+      "@supabase/supabase-js": "^2.43.5",
+    "@whiskeysockets/baileys": "latest",
+    "cohere-ai": "^7.8.4",
+    "pino": "^8.21.0"
   }
 }
